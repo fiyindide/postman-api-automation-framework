@@ -1,0 +1,1748 @@
+{
+  "info": {
+    "_postman_id": "be7aceea-8c2e-4aa0-814b-300bbb4b1c01",
+    "name": "Fake Store API Test Suite",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "10279150",
+    "_collection_link": "https://go.postman.co/collection/10279150-be7aceea-8c2e-4aa0-814b-300bbb4b1c01?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Missing Username",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// 1. Verify status code is 400\r",
+                  "pm.test(\"Status code is 400 for invalid credentials\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 401]);\r",
+                  "});\r",
+                  "\r",
+                  "// 2. Verify response contains error message\r",
+                  "pm.test(\"Response contains 'not provided'\", function () {\r",
+                  "    pm.expect(pm.response.text().toLowerCase()).to.include(\"not provided\");\r",
+                  "});\r",
+                  "\r",
+                  "// 3. Verify no token is returned\r",
+                  "pm.test(\"No token returned for invalid credentials\", function () {\r",
+                  "    const responseText = pm.response.text();\r",
+                  "    pm.expect(responseText).to.not.include(\"token\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"\",\r\n  \"password\": \"83r5^_\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Invalid Details",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// 1. Verify status code is 400\r",
+                  "pm.test(\"Status code is 400 for invalid credentials\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 401]);\r",
+                  "});\r",
+                  "\r",
+                  "// 2. Verify response contains error message\r",
+                  "pm.test(\"Response contains 'incorrect'\", function () {\r",
+                  "    pm.expect(pm.response.text().toLowerCase()).to.include(\"incorrect\");\r",
+                  "});\r",
+                  "\r",
+                  "// 3. Verify no token is returned\r",
+                  "pm.test(\"No token returned for invalid credentials\", function () {\r",
+                  "    const responseText = pm.response.text();\r",
+                  "    pm.expect(responseText).to.not.include(\"token\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"wronguser\",\r\n    \"password\": \"wrongpassword\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Valid Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "\r",
+                  "// test to check response status code is 200. \r",
+                  "pm.test(\"Status code is 200 or 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "// test to check response contains auth token. \r",
+                  "pm.test(\"Response contains auth token\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.token).to.be.a('string');\r",
+                  "    // Save token for future 'Interoperability' tests\r",
+                  "    pm.environment.set(\"auth_token\", jsonData.token);\r",
+                  "    console.log(\"Token saved: \" + jsonData.token);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// 1. Check if the request body is valid JSON\r",
+                  "pm.test(\"Request body schema is valid JSON\", function () {\r",
+                  "    pm.expect(pm.request.body.mode).to.equal('raw');\r",
+                  "    // Attempt to parse the body to ensure it isn't malformed\r",
+                  "    const requestBody = JSON.parse(pm.request.body.raw);\r",
+                  "    pm.expect(requestBody).to.be.an('object');\r",
+                  "});\r",
+                  "\r",
+                  "// 2. Check that the request body contains required fields\r",
+                  "pm.test(\"Request body contains required fields\", function () {\r",
+                  "    const requestBody = JSON.parse(pm.request.body.raw);\r",
+                  "    pm.expect(requestBody).to.have.property(\"username\");\r",
+                  "    pm.expect(requestBody).to.have.property(\"password\");\r",
+                  "});\r",
+                  "\r",
+                  "// 3. Check that fields are in the required formats\r",
+                  "pm.test(\"Request body fields are strings\", function () {\r",
+                  "    const requestBody = JSON.parse(pm.request.body.raw);\r",
+                  "    pm.expect(requestBody.username).to.be.a('string');\r",
+                  "    pm.expect(requestBody.password).to.be.a('string');\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"mor_2314\",\r\n  \"password\": \"83r5^_\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "auth": {
+        "type": "noauth"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              ""
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "item": [
+            {
+              "name": "Get All Users - Valid",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test status code is 200.\r",
+                      "pm.test(\"TC-USR-001: Status code is 200\", function () {\r",
+                      "    pm.expect(pm.response.code).to.equal(200);\r",
+                      "});\r",
+                      "\r",
+                      "// Test response is an array.\r",
+                      "pm.test(\"TC-USR-002: Response is an array\", function () {\r",
+                      "    const jsonData = pm.response.json();\r",
+                      "    pm.expect(jsonData).to.be.an('array');\r",
+                      "});\r",
+                      "\r",
+                      "// Test required fields in each user object.\r",
+                      "pm.test(\"TC-USR-003: Each user has required fields\", function () {\r",
+                      "    const jsonData = pm.response.json();\r",
+                      "    jsonData.forEach(function(user) {\r",
+                      "        pm.expect(user).to.have.property('id');\r",
+                      "        pm.expect(user).to.have.property('username');\r",
+                      "        pm.expect(user).to.have.property('email');\r",
+                      "        pm.expect(user).to.have.property('password');\r",
+                      "    });\r",
+                      "});\r",
+                      "\r",
+                      "// Test valid data types for each user field.\r",
+                      "pm.test(\"TC-USR-004: Data types are correct\", function () {\r",
+                      "    const jsonData = pm.response.json();\r",
+                      "    jsonData.forEach(function(user) {\r",
+                      "        pm.expect(user.id).to.be.a('number');\r",
+                      "        pm.expect(user.username).to.be.a('string');\r",
+                      "        pm.expect(user.email).to.be.a('string');\r",
+                      "        pm.expect(user.password).to.be.a('string');\r",
+                      "    });\r",
+                      "});\r",
+                      "\r",
+                      "// Test response body is not empty.\r",
+                      "pm.test(\"TC-USR-005: Response array is not empty\", function () {\r",
+                      "    const jsonData = pm.response.json();\r",
+                      "    pm.expect(jsonData.length).to.be.above(0);\r",
+                      "});\r",
+                      "\r",
+                      "// Test response time is less than 2000ms.\r",
+                      "pm.test(\"TC-USR-006: Response time is under 2000ms\", function () {\r",
+                      "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "basic",
+                  "basic": [
+                    {
+                      "key": "password",
+                      "value": "password123",
+                      "type": "string"
+                    },
+                    {
+                      "key": "username",
+                      "value": "admin",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"fifi\",\r\n  \"email\": \"fifi@gmail.com\",\r\n  \"password\": \"password0\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/users",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get All Users - Invalid",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test status code is 200.\r",
+                      "pm.test(\"TC-USR-001: Status code is 200\", function () {\r",
+                      "    pm.expect(pm.response.code).to.equal(200);\r",
+                      "});\r",
+                      "\r",
+                      "// Test response is an array.\r",
+                      "pm.test(\"TC-USR-002: Response is an array\", function () {\r",
+                      "    const jsonData = pm.response.json();\r",
+                      "    pm.expect(jsonData).to.be.an('array');\r",
+                      "});\r",
+                      "\r",
+                      "// Test required fields in each user object.\r",
+                      "pm.test(\"TC-USR-003: Each user has required fields\", function () {\r",
+                      "    const jsonData = pm.response.json();\r",
+                      "    jsonData.forEach(function(user) {\r",
+                      "        pm.expect(user).to.have.property('id');\r",
+                      "        pm.expect(user).to.have.property('username');\r",
+                      "        pm.expect(user).to.have.property('email');\r",
+                      "        pm.expect(user).to.have.property('password');\r",
+                      "    });\r",
+                      "});\r",
+                      "\r",
+                      "// Test valid data types for each user field.\r",
+                      "pm.test(\"TC-USR-004: Data types are correct\", function () {\r",
+                      "    const jsonData = pm.response.json();\r",
+                      "    jsonData.forEach(function(user) {\r",
+                      "        pm.expect(user.id).to.be.a('number');\r",
+                      "        pm.expect(user.username).to.be.a('string');\r",
+                      "        pm.expect(user.email).to.be.a('string');\r",
+                      "        pm.expect(user.password).to.be.a('string');\r",
+                      "    });\r",
+                      "});\r",
+                      "\r",
+                      "// Test response body is not empty.\r",
+                      "pm.test(\"TC-USR-005: Response array is not empty\", function () {\r",
+                      "    const jsonData = pm.response.json();\r",
+                      "    pm.expect(jsonData.length).to.be.above(0);\r",
+                      "});\r",
+                      "\r",
+                      "// Test response time is less than 2000ms.\r",
+                      "pm.test(\"TC-USR-006: Response time is under 2000ms\", function () {\r",
+                      "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "basic",
+                  "basic": [
+                    {
+                      "key": "password",
+                      "value": "password123",
+                      "type": "string"
+                    },
+                    {
+                      "key": "username",
+                      "value": "admin",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"fifi\",\r\n  \"email\": \"fifi@gmail.com\",\r\n  \"password\": \"password0\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/users",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Add a New User",
+          "item": [
+            {
+              "name": "Add a New User - Invalid",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test status code is 404.\r",
+                      "pm.test(\"Status code is 404\", function () {\r",
+                      "    pm.expect(pm.response.code).to.be.eql(404);\r",
+                      "});\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"id\": 15,\r\n  \"username\": null,\r\n  \"email\": \"fifi@gmail.com\",\r\n  \"password\": \"password0\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/userss",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "userss"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Add a New User - Valid",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "\r",
+                      "// Test that Status code is 201\r",
+                      "pm.test(\"Status code is 201\", function () {\r",
+                      "    pm.expect(pm.response.code).to.be.eql(201);\r",
+                      "});\r",
+                      "\r",
+                      "// Test that Response is JSON\r",
+                      "pm.test(\"Response is valid JSON\", function () {\r",
+                      "    pm.response.to.be.json;\r",
+                      "});\r",
+                      "\r",
+                      "// Test required fields in user object.\r",
+                      "// pm.test(\"User has required fields\", function () {\r",
+                      "//     const jsonData = pm.response.json();\r",
+                      "//     jsonData.forEach(function(user) {\r",
+                      "//         pm.expect(user).to.have.property('id');\r",
+                      "//         pm.expect(user).to.have.property('username');\r",
+                      "//         pm.expect(user).to.have.property('email');\r",
+                      "//         pm.expect(user).to.have.property('password');\r",
+                      "//     });\r",
+                      "// });\r",
+                      "\r",
+                      "// Test valid data types for each user property.\r",
+                      "// pm.test(\"Data types are correct\", function () {\r",
+                      "//     const jsonData = pm.response.json();\r",
+                      "//     jsonData.forEach(function(user) {\r",
+                      "//         pm.expect(user.id).to.be.a('number');\r",
+                      "//         pm.expect(user.username).to.be.a('string');\r",
+                      "//         pm.expect(user.email).to.be.a('string');\r",
+                      "//         pm.expect(user.password).to.be.a('string');\r",
+                      "//     });\r",
+                      "// });\r",
+                      "\r",
+                      "\r",
+                      "\r",
+                      "// Test that No unexpected fields returned i.e. only ID is returned\r",
+                      "pm.test(\"Response only contains ID\", function () {\r",
+                      "    const body = pm.response.json();\r",
+                      "    pm.expect(Object.keys(body)).to.have.lengthOf(1);\r",
+                      "    pm.expect(body).to.have.all.keys(\"id\");\r",
+                      "});\r",
+                      "\r",
+                      "// Test that ID is generated and save it for later use.     \r",
+                      "pm.test(\"ID is generated\", function () {\r",
+                      "    const body = pm.response.json();\r",
+                      "    pm.environment.set(\"user_id\", body.id);\r",
+                      "});\r",
+                      "\r",
+                      "\r",
+                      "// Test that ID is a number.\r",
+                      "pm.test(\"ID is a number\", function () {\r",
+                      "    const body = pm.response.json();\r",
+                      "    pm.expect(body.id).to.be.a(\"number\");\r",
+                      "\r",
+                      "});\r",
+                      "\r",
+                      "\r",
+                      "// Test that no sensitiive data is leaked\r",
+                      "pm.test(\"No sensitive user data returned\", function () {\r",
+                      "    const body = pm.response.json();\r",
+                      "    pm.expect(body).to.not.have.property(\"password\");\r",
+                      "    pm.expect(body).to.not.have.property(\"email\");\r",
+                      "    pm.expect(body).to.not.have.property(\"username\");\r",
+                      "});\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "basic",
+                  "basic": [
+                    {
+                      "key": "password",
+                      "value": "password123",
+                      "type": "string"
+                    },
+                    {
+                      "key": "username",
+                      "value": "admin",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"id\": 15,\r\n  \"username\": \"fifi\",\r\n  \"email\": \"fifi@gmail.com\",\r\n  \"password\": \"password0\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/users",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "{{id}} required",
+          "item": [
+            {
+              "name": "Get a Single User",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Parse the response\r",
+                      "const jsonData = pm.response.json();\r",
+                      "\r",
+                      "// Test the response status code\r",
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});\r",
+                      "\r",
+                      "\r",
+                      "// Test that Response is JSON\r",
+                      "pm.test(\"Response is valid JSON\", function () {\r",
+                      "    pm.response.to.be.json;\r",
+                      "});\r",
+                      "\r",
+                      "// Test that the response contains the correct user information\r",
+                      "pm.test(\"User information is correct\", function () {\r",
+                      "    pm.expect(jsonData).to.have.property('id');\r",
+                      "    pm.expect(jsonData).to.have.property('username');\r",
+                      "    pm.expect(jsonData).to.have.property('email');\r",
+                      "    pm.expect(jsonData).to.have.property('password');\r",
+                      "\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "packages": {},
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "basic",
+                  "basic": [
+                    {
+                      "key": "password",
+                      "value": "password123",
+                      "type": "string"
+                    },
+                    {
+                      "key": "username",
+                      "value": "admin",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{base_url}}/users/1",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update a User",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"id\": {{user_id}},\r\n  \"username\": \"david\",\r\n  \"email\": \"david@gmail.com\",\r\n  \"password\": \"password15\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/users/{{user_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "{{user_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete a User",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test to check if the response status code is 200\r",
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});\r",
+                      "\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{base_url}}/users/{{user_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "{{user_id}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Get All Products",
+          "item": [
+            {
+              "name": "Get All Products - Invalid",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test status code is 404.\r",
+                      "pm.test(\"Status code is 404\", function () {\r",
+                      "    pm.expect(pm.response.code).to.be.eql(404);\r",
+                      "});\r",
+                      "\r",
+                      "\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/productss",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "productss"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get All Products - Valid",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test status code is 200.\r",
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.expect(pm.response.code).to.equal(200);\r",
+                      "});\r",
+                      "\r",
+                      "// Test response is an array.\r",
+                      "pm.test(\"Response is an array\", function () {\r",
+                      "    const jsonData = pm.response.json();\r",
+                      "    pm.expect(jsonData).to.be.an('array');\r",
+                      "});\r",
+                      "\r",
+                      "// Test required fields in each user object.\r",
+                      "pm.test(\"Each user has required fields\", function () {\r",
+                      "    const jsonData = pm.response.json();\r",
+                      "    jsonData.forEach(function(user) {\r",
+                      "        pm.expect(user).to.have.property('id');\r",
+                      "        pm.expect(user).to.have.property('title');\r",
+                      "        pm.expect(user).to.have.property('price');\r",
+                      "        pm.expect(user).to.have.property('description');\r",
+                      "    });\r",
+                      "});\r",
+                      "\r",
+                      "// Test valid data types for each user field.\r",
+                      "pm.test(\" Data types are correct\", function () {\r",
+                      "    const jsonData = pm.response.json();\r",
+                      "    jsonData.forEach(function(user) {\r",
+                      "        pm.expect(user.id).to.be.a('number');\r",
+                      "        pm.expect(user.title).to.be.a('string');\r",
+                      "        pm.expect(user.price).to.be.a('number');\r",
+                      "        pm.expect(user.description).to.be.a('string');\r",
+                      "    });\r",
+                      "});\r",
+                      "\r",
+                      "// Test response body is not empty.\r",
+                      "pm.test(\"Response array is not empty\", function () {\r",
+                      "    const jsonData = pm.response.json();\r",
+                      "    pm.expect(jsonData.length).to.be.above(0);\r",
+                      "});\r",
+                      "\r",
+                      "// Test response time is less than 2000ms.\r",
+                      "pm.test(\"Response time is under 2000ms\", function () {\r",
+                      "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "basic",
+                  "basic": [
+                    {
+                      "key": "password",
+                      "value": "password123",
+                      "type": "string"
+                    },
+                    {
+                      "key": "username",
+                      "value": "admin",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"fifi\",\r\n  \"email\": \"fifi@gmail.com\",\r\n  \"password\": \"password0\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/products",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "products"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Add A New Product",
+          "item": [
+            {
+              "name": "Add A New Product - Valid",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const jsonData = pm.response.json();\r",
+                      "\r",
+                      "// Verify status code\r",
+                      "pm.test(\"TC-PRD-001: Status code is 200 or 201\", function () {\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                      "});\r",
+                      "\r",
+                      "// Verify mandatory fields are present\r",
+                      "pm.test(\"TC-PRD-002: Response contains mandatory fields\", function () {\r",
+                      "    pm.expect(jsonData).to.have.property('id');\r",
+                      "    pm.expect(jsonData).to.have.property('title');\r",
+                      "    pm.expect(jsonData).to.have.property('price');\r",
+                      "    pm.expect(jsonData).to.have.property('description');\r",
+                      "    pm.expect(jsonData).to.have.property('category');\r",
+                      "    pm.expect(jsonData).to.have.property('image');\r",
+                      "});\r",
+                      "\r",
+                      "// Verify data types\r",
+                      "pm.test(\"TC-PRD-003: Response fields have correct data types\", function () {\r",
+                      "    pm.expect(jsonData.id).to.be.a('number');\r",
+                      "    pm.expect(jsonData.title).to.be.a('string');\r",
+                      "    pm.expect(jsonData.price).to.be.a('number');\r",
+                      "    pm.expect(jsonData.description).to.be.a('string');\r",
+                      "    pm.expect(jsonData.category).to.be.a('string');\r",
+                      "    pm.expect(jsonData.image).to.be.a('string');\r",
+                      "    pm.expect(jsonData.image).to.match(/^https?:\\/\\/.+/);\r",
+                      "});\r",
+                      "\r",
+                      "// Verify response matches sent payload\r",
+                      "pm.test(\"TC-PRD-004: Response data matches sent payload\", function () {\r",
+                      "    pm.expect(jsonData.title).to.equal(pm.environment.get(\"productTitle\"));\r",
+                      "    pm.expect(jsonData.price).to.equal(pm.environment.get(\"productPrice\"));\r",
+                      "    pm.expect(jsonData.description).to.equal(pm.environment.get(\"productDescription\"));\r",
+                      "    pm.expect(jsonData.category).to.equal(pm.environment.get(\"productCategory\"));\r",
+                      "    pm.expect(jsonData.image).to.equal(pm.environment.get(\"productImage\"));\r",
+                      "});\r",
+                      "\r",
+                      "\r",
+                      "// Save product ID for use in subsequent requests\r",
+                      "pm.test(\"TC-PRD-005: Product ID is captured and saved\", function () {\r",
+                      "    pm.expect(jsonData.id).to.be.a('number');\r",
+                      "    pm.environment.set(\"newProductId\", jsonData.id);\r",
+                      "    console.log(\"Saved Product ID:\", pm.environment.get(\"newProductId\"));\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set(\"productTitle\", \"Test Product\");\r",
+                      "pm.environment.set(\"productPrice\", 29.99);\r",
+                      "pm.environment.set(\"productDescription\", \"A test product description\");\r",
+                      "pm.environment.set(\"productCategory\", \"electronics\");\r",
+                      "pm.environment.set(\"productImage\", \"https://fakestoreapi.com/img/test.jpg\");"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"title\": \"{{productTitle}}\",\r\n    \"price\": {{productPrice}},\r\n    \"description\": \"{{productDescription}}\",\r\n    \"category\": \"{{productCategory}}\",\r\n    \"image\": \"{{productImage}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/products",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "products"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Add A New Product - Invalid",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test status code is 404.\r",
+                      "pm.test(\"Status code is 404\", function () {\r",
+                      "    pm.expect(pm.response.code).to.be.eql(404);\r",
+                      "});\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set(\"productTitle\", \"Test Product\");\r",
+                      "pm.environment.set(\"productPrice\", 29.99);\r",
+                      "pm.environment.set(\"productDescription\", \"A test product description\");\r",
+                      "pm.environment.set(\"productCategory\", \"electronics\");\r",
+                      "pm.environment.set(\"productImage\", \"https://fakestoreapi.com/img/test.jpg\");"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"title\": \"{{productTitle}}\",\r\n    \"price\": {{productPrice}},\r\n    \"description\": \"{{productDescription}}\",\r\n    \"category\": \"{{productCategory}}\",\r\n    \"image\": \"{{productImage}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/productss",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "productss"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Get A Single Product",
+          "item": [
+            {
+              "name": "Get A Single Product - Valid",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test status code is 200\r",
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.response.to.have.status(200);    \r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/products/{{newProductId}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "products",
+                    "{{newProductId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get A Single Product - Invalid",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test status code is 404.\r",
+                      "pm.test(\"Status code is 404\", function () {\r",
+                      "    pm.expect(pm.response.code).to.be.eql(404);\r",
+                      "});\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"id\": 15,\r\n  \"username\": null,\r\n  \"email\": \"fifi@gmail.com\",\r\n  \"password\": \"password0\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/productss/{{newProductId}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "productss",
+                    "{{newProductId}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Update A Product",
+          "item": [
+            {
+              "name": "Update A Product - Valid",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set(\"productTitle\", \"Updated Test Product\");\r",
+                      "pm.environment.set(\"productPrice\", 19.99);\r",
+                      "pm.environment.set(\"productDescription\", \"An updated test product description\");\r",
+                      "pm.environment.set(\"productCategory\", \"electricals\");\r",
+                      "pm.environment.set(\"productImage\", \"https://fakestoreapi.com/img/test.jpg\");"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const jsonData = pm.response.json();\r",
+                      "\r",
+                      "// Verify status code\r",
+                      "pm.test(\"TC-PRD-001: Status code is 200 or 201\", function () {\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                      "});\r",
+                      "\r",
+                      "// Verify mandatory fields are present\r",
+                      "pm.test(\"TC-PRD-002: Response contains mandatory fields\", function () {\r",
+                      "    pm.expect(jsonData).to.have.property('id');\r",
+                      "    pm.expect(jsonData).to.have.property('title');\r",
+                      "    pm.expect(jsonData).to.have.property('price');\r",
+                      "    pm.expect(jsonData).to.have.property('description');\r",
+                      "    pm.expect(jsonData).to.have.property('category');\r",
+                      "    pm.expect(jsonData).to.have.property('image');\r",
+                      "});\r",
+                      "\r",
+                      "// Verify data types\r",
+                      "pm.test(\"TC-PRD-003: Response fields have correct data types\", function () {\r",
+                      "    pm.expect(jsonData.id).to.be.a('number');\r",
+                      "    pm.expect(jsonData.title).to.be.a('string');\r",
+                      "    pm.expect(jsonData.price).to.be.a('number');\r",
+                      "    pm.expect(jsonData.description).to.be.a('string');\r",
+                      "    pm.expect(jsonData.category).to.be.a('string');\r",
+                      "    pm.expect(jsonData.image).to.be.a('string');\r",
+                      "    pm.expect(jsonData.image).to.match(/^https?:\\/\\/.+/);\r",
+                      "});\r",
+                      "\r",
+                      "// Verify response matches sent payload\r",
+                      "pm.test(\"TC-PRD-004: Response data matches sent payload\", function () {\r",
+                      "    pm.expect(jsonData.title).to.equal(pm.environment.get(\"productTitle\"));\r",
+                      "    pm.expect(jsonData.price).to.equal(pm.environment.get(\"productPrice\"));\r",
+                      "    pm.expect(jsonData.description).to.equal(pm.environment.get(\"productDescription\"));\r",
+                      "    pm.expect(jsonData.category).to.equal(pm.environment.get(\"productCategory\"));\r",
+                      "    pm.expect(jsonData.image).to.equal(pm.environment.get(\"productImage\"));\r",
+                      "});\r",
+                      "\r",
+                      "\r",
+                      "// Save product ID for use in subsequent requests\r",
+                      "pm.test(\"TC-PRD-005: Product ID is captured and saved\", function () {\r",
+                      "    pm.expect(jsonData.id).to.be.a('number');\r",
+                      "    pm.environment.set(\"newProductId\", jsonData.id);\r",
+                      "    console.log(\"Saved Product ID:\", pm.environment.get(\"newProductId\"));\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"title\": \"{{productTitle}}\",\r\n    \"price\": {{productPrice}},\r\n    \"description\": \"{{productDescription}}\",\r\n    \"category\": \"{{productCategory}}\",\r\n    \"image\": \"{{productImage}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/products/{{newProductId}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "products",
+                    "{{newProductId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update A Product - Invalid",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set(\"productTitle\", \"Updated Test Product\");\r",
+                      "pm.environment.set(\"productPrice\", 19.99);\r",
+                      "pm.environment.set(\"productDescription\", \"An updated test product description\");\r",
+                      "pm.environment.set(\"productCategory\", \"electricals\");\r",
+                      "pm.environment.set(\"productImage\", \"https://fakestoreapi.com/img/test.jpg\");"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test status code is 404.\r",
+                      "pm.test(\"Status code is 404\", function () {\r",
+                      "    pm.expect(pm.response.code).to.be.eql(404);\r",
+                      "});\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"title\": \"string\",\r\n  \"price\": 0.1,\r\n  \"description\": \"string\",\r\n  \"category\": \"string\",\r\n  \"image\": \"http://example.com\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/productss/{{newProductId}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "productss",
+                    "{{newProductId}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Delete A Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test status code is 200\r",
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"title\": \"{{productTitle}}\",\r\n    \"price\": {{productPrice}},\r\n    \"description\": \"{{productDescription}}\",\r\n    \"category\": \"{{productCategory}}\",\r\n    \"image\": \"{{productImage}}\"\r\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/products/{{newProductId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products",
+                "{{newProductId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Carts",
+      "item": [
+        {
+          "name": "Get All Carts",
+          "item": [
+            {
+              "name": "Get All Carts - Invalid",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test status code is 404.\r",
+                      "pm.test(\"Status code is 404\", function () {\r",
+                      "    pm.expect(pm.response.code).to.be.eql(404);\r",
+                      "});\r",
+                      "\r",
+                      "\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/productss",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "productss"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get All Carts - Valid",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test status code is 200.\r",
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.expect(pm.response.code).to.equal(200);\r",
+                      "});\r",
+                      "\r",
+                      "// Test response is an array.\r",
+                      "pm.test(\"Response is an array\", function () {\r",
+                      "    const jsonData = pm.response.json();\r",
+                      "    pm.expect(jsonData).to.be.an('array');\r",
+                      "});\r",
+                      "\r",
+                      "// Test required fields in each user object.\r",
+                      "pm.test(\"Each cart has required fields\", function () {\r",
+                      "    const jsonData = pm.response.json();\r",
+                      "    jsonData.forEach(function(cart) {\r",
+                      "        pm.expect(cart).to.have.property('id');\r",
+                      "        pm.expect(cart).to.have.property('userId');\r",
+                      "        pm.expect(cart).to.have.property('date');\r",
+                      "        pm.expect(cart).to.have.property('products');\r",
+                      "    });\r",
+                      "});\r",
+                      "\r",
+                      "// Test valid data types for each cart field.\r",
+                      "pm.test(\" Data types are correct\", function () {\r",
+                      "    const jsonData = pm.response.json();\r",
+                      "    jsonData.forEach(function(cart) {\r",
+                      "        pm.expect(cart.id).to.be.a('number');\r",
+                      "        pm.expect(cart.userId).to.be.a('number');\r",
+                      "        pm.expect(cart.date).to.be.a('string');\r",
+                      "        pm.expect(cart.products).to.be.an('array');\r",
+                      "    });\r",
+                      "});\r",
+                      "\r",
+                      "// Test response body is not empty.\r",
+                      "pm.test(\"Response array is not empty\", function () {\r",
+                      "    const jsonData = pm.response.json();\r",
+                      "    pm.expect(jsonData.length).to.be.above(0);\r",
+                      "});\r",
+                      "\r",
+                      "// Test response time is less than 2000ms.\r",
+                      "pm.test(\"Response time is under 2000ms\", function () {\r",
+                      "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/carts",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "carts"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Add A New Cart",
+          "item": [
+            {
+              "name": "Add A New Cart - Valid",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const jsonData = pm.response.json();\r",
+                      "\r",
+                      "// Verify status code\r",
+                      "pm.test(\"TC-PRD-001: Status code is 200 or 201\", function () {\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                      "});\r",
+                      "\r",
+                      "// Verify mandatory fields are present\r",
+                      "pm.test(\"TC-PRD-002: Response contains mandatory fields\", function () {\r",
+                      "    pm.expect(jsonData).to.have.property('id');\r",
+                      "    pm.expect(jsonData).to.have.property('title');\r",
+                      "    pm.expect(jsonData).to.have.property('price');\r",
+                      "    pm.expect(jsonData).to.have.property('description');\r",
+                      "    pm.expect(jsonData).to.have.property('category');\r",
+                      "    pm.expect(jsonData).to.have.property('image');\r",
+                      "});\r",
+                      "\r",
+                      "// Verify data types\r",
+                      "pm.test(\"TC-PRD-003: Response fields have correct data types\", function () {\r",
+                      "    pm.expect(jsonData.id).to.be.a('number');\r",
+                      "    pm.expect(jsonData.title).to.be.a('string');\r",
+                      "    pm.expect(jsonData.price).to.be.a('number');\r",
+                      "    pm.expect(jsonData.description).to.be.a('string');\r",
+                      "    pm.expect(jsonData.category).to.be.a('string');\r",
+                      "    pm.expect(jsonData.image).to.be.a('string');\r",
+                      "    pm.expect(jsonData.image).to.match(/^https?:\\/\\/.+/);\r",
+                      "});\r",
+                      "\r",
+                      "// Verify response matches sent payload\r",
+                      "pm.test(\"TC-PRD-004: Response data matches sent payload\", function () {\r",
+                      "    pm.expect(jsonData.title).to.equal(pm.environment.get(\"productTitle\"));\r",
+                      "    pm.expect(jsonData.price).to.equal(pm.environment.get(\"productPrice\"));\r",
+                      "    pm.expect(jsonData.description).to.equal(pm.environment.get(\"productDescription\"));\r",
+                      "    pm.expect(jsonData.category).to.equal(pm.environment.get(\"productCategory\"));\r",
+                      "    pm.expect(jsonData.image).to.equal(pm.environment.get(\"productImage\"));\r",
+                      "});\r",
+                      "\r",
+                      "\r",
+                      "// Save product ID for use in subsequent requests\r",
+                      "pm.test(\"TC-PRD-005: Product ID is captured and saved\", function () {\r",
+                      "    pm.expect(jsonData.id).to.be.a('number');\r",
+                      "    pm.environment.set(\"newProductId\", jsonData.id);\r",
+                      "    console.log(\"Saved Product ID:\", pm.environment.get(\"newProductId\"));\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set(\"productTitle\", \"Test Product\");\r",
+                      "pm.environment.set(\"productPrice\", 29.99);\r",
+                      "pm.environment.set(\"productDescription\", \"A test product description\");\r",
+                      "pm.environment.set(\"productCategory\", \"electronics\");\r",
+                      "pm.environment.set(\"productImage\", \"https://fakestoreapi.com/img/test.jpg\");"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"title\": \"{{productTitle}}\",\r\n    \"price\": {{productPrice}},\r\n    \"description\": \"{{productDescription}}\",\r\n    \"category\": \"{{productCategory}}\",\r\n    \"image\": \"{{productImage}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/products",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "products"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Add A New Cart - Invalid",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test status code is 404.\r",
+                      "pm.test(\"Status code is 404\", function () {\r",
+                      "    pm.expect(pm.response.code).to.be.eql(404);\r",
+                      "});\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set(\"productTitle\", \"Test Product\");\r",
+                      "pm.environment.set(\"productPrice\", 29.99);\r",
+                      "pm.environment.set(\"productDescription\", \"A test product description\");\r",
+                      "pm.environment.set(\"productCategory\", \"electronics\");\r",
+                      "pm.environment.set(\"productImage\", \"https://fakestoreapi.com/img/test.jpg\");"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"title\": \"{{productTitle}}\",\r\n    \"price\": {{productPrice}},\r\n    \"description\": \"{{productDescription}}\",\r\n    \"category\": \"{{productCategory}}\",\r\n    \"image\": \"{{productImage}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/productss",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "productss"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Get A Single Cart",
+          "item": [
+            {
+              "name": "Get A Single Cart - Valid",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test status code is 200\r",
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.response.to.have.status(200);    \r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/products/{{newProductId}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "products",
+                    "{{newProductId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get A Single Cart - Invalid",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test status code is 404.\r",
+                      "pm.test(\"Status code is 404\", function () {\r",
+                      "    pm.expect(pm.response.code).to.be.eql(404);\r",
+                      "});\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"id\": 15,\r\n  \"username\": null,\r\n  \"email\": \"fifi@gmail.com\",\r\n  \"password\": \"password0\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/productss/{{newProductId}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "productss",
+                    "{{newProductId}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
